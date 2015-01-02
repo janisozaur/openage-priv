@@ -1,4 +1,4 @@
-// Copyright 2014-2014 the openage authors. See copying.md for legal info.
+// Copyright 2015-2015 the openage authors. See copying.md for legal info.
 
 #include "dynamic_resource.h"
 
@@ -106,7 +106,7 @@ std::tuple<const int16_t*,size_t> DynamicResource::get_data(
 void DynamicResource::start_preloading(size_t resource_chunk_index) {
 	size_t resource_chunk_offset = resource_chunk_index * this->chunk_size;
 
-	for (size_t i = 1; i < this->preload_threshold; i++) {
+	for (int i = 1; i < this->preload_threshold; i++) {
 		resource_chunk_index += 1;
 		resource_chunk_offset += this->chunk_size;
 
