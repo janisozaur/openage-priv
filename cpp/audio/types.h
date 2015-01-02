@@ -28,7 +28,7 @@ using pcm_chunk_t = std::vector<int16_t>;
  * opus_file_t is a OggOpusFile pointer that is stored inside a unique_ptr and
  * uses a custom deleter.
  */
-using opus_file_t = std::unique_ptr<OggOpusFile,std::function<void(OggOpusFile*)>>;
+using opus_file_t = std::unique_ptr<OggOpusFile, std::function<void(OggOpusFile*)>>;
 
 }
 }
