@@ -91,16 +91,19 @@ std::tuple<const int16_t*,size_t> DynamicResource::get_data(
 		}
 	}
 
-	// the chunk is not yet loading or ready, so start loading it
+	// the chunk is currently not loaded, so start a background job
+	// take the next available chunk
 	auto chunk_info = this->chunk_infos.front();
 	this->chunk_infos.pop();
 
+	// map it to the corresponding resource offset
 	this->chunk_mapping.insert({resource_chunk_index, chunk_info});
 	size_t resource_chunk_offset = resource_chunk_index * this->chunk_size;
+
+	// and start loading
 	this->start_loading(chunk_info, resource_chunk_offset);
 	this->start_preloading(resource_chunk_index);
 	
-	// the chunk is currently not loaded, so start a background job
 	return std::make_tuple(nullptr, 1);	
 }
 
@@ -123,7 +126,6 @@ void DynamicResource::start_preloading(size_t resource_chunk_index) {
 			}
 		// there is no entry, so start loading
 		} else {
-			//log::msg("UP_TO_LOAD: %lu", resource_chunk_index);
 			auto local_chunk_info = this->chunk_infos.front();
 			this->chunk_infos.pop();
 
