@@ -1,4 +1,4 @@
-// Copyright 2013-2014 the openage authors. See copying.md for legal info.
+// Copyright 2013-2015 the openage authors. See copying.md for legal info.
 
 #include "engine.h"
 
@@ -253,6 +253,8 @@ void Engine::loop() {
 
 	while (this->running) {
 		this->fpscounter.frame();
+
+		this->job_manager->execute_callbacks();
 
 		while (SDL_PollEvent(&event)) {
 			for (auto &action : this->on_input_event) {
