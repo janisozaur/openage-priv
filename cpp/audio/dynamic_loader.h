@@ -43,7 +43,7 @@ public:
 	 * @param chunk_size the number of int16_t values that fit in one chunk
 	 */
 	virtual size_t load_chunk(int16_t *chunk_buffer, size_t offset,
-			size_t chunk_size) = 0;
+	                          size_t chunk_size) = 0;
 
 	/**
 	 * Creates a DynamicLoader instance that supports the given format.
@@ -51,7 +51,7 @@ public:
 	 * @param format the resource's audio format
 	 */
 	static std::unique_ptr<DynamicLoader> create(const std::string &path,
-			format_t format);
+	                                             format_t format);
 };
 
 }
