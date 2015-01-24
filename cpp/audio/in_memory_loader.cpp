@@ -1,4 +1,4 @@
-// Copyright 2014-2014 the openage authors. See copying.md for legal info.
+// Copyright 2014-2015 the openage authors. See copying.md for legal info.
 
 #include "in_memory_loader.h"
 
@@ -10,12 +10,12 @@ namespace openage {
 namespace audio {
 
 InMemoryLoader::InMemoryLoader(const std::string &path)
-		:
-		path{path} {
+	:
+	path{path} {
 }
 
 std::unique_ptr<InMemoryLoader> InMemoryLoader::create(const std::string &path,
-		format_t format) {
+                                                       format_t format) {
 	std::unique_ptr<InMemoryLoader> loader;
 	// switch format and return an appropriate loader
 	switch (format) {
