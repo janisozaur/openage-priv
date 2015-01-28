@@ -19,7 +19,7 @@ namespace openage {
  */
 class AssetManager final {
 public:
-	AssetManager(const util::Dir *root);
+	AssetManager(AssetLoader &loader);
 
 	/**
 	 * Test whether a requested asset filename can be loaded.
@@ -57,7 +57,7 @@ private:
 	/**
 	 * The root directory for the available assets.
 	 */
-	const util::Dir *root;
+	AssetLoader &loader;
 
 	/**
 	 * The replacement texture for missing textures.

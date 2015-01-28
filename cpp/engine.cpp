@@ -340,10 +340,6 @@ void Engine::register_resize_action(ResizeHandler *handler) {
 	this->input_handler.register_resize_action(handler);
 }
 
-const util::Dir *Engine::get_data_dir() {
-	return &this->data_dirs.at(0);
-}
-
 job::JobManager *Engine::get_job_manager() {
 	return this->job_manager;
 }

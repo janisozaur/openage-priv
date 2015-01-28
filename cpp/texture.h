@@ -15,6 +15,7 @@
 #include "shader/program.h"
 #include "shader/shader.h"
 #include "util/file.h"
+#include "assetloader.h"
 
 namespace openage {
 
@@ -69,7 +70,7 @@ public:
 	 * Create a texture from a existing image file.
 	 * For supported image file types, see the SDL_Image initialization in the engine.
 	 */
-	Texture(const std::string &filename, bool use_metafile=false);
+	Texture(AssetLoader &loader, const std::string &filename, bool use_metafile = false);
 	~Texture();
 
 	void draw(coord::camhud pos, unsigned int mode=0, bool mirrored=false, int subid=0, unsigned player=0) const;
@@ -80,7 +81,7 @@ public:
 	/**
 	 * Reload the image file. Used for inotify refreshing.
 	 */
-	void reload();
+	void reload(AssetLoader &loader);
 
 	/**
 	 * Get the subtexture coordinates by its idea.
@@ -140,8 +141,8 @@ private:
 
 	std::string filename;
 
-	void load();
 	GLuint make_gl_texture(int iformat, int oformat, int w, int h, void *);
+	void load(openage::AssetLoader& loader);
 	void unload();
 };
 

@@ -12,6 +12,7 @@
 #include "error.h"
 #include "dir.h"
 #include "../log.h"
+#include "../assetloader.h"
 
 namespace openage {
 namespace util {
@@ -21,8 +22,8 @@ namespace util {
  * call the destination struct .fill() method for actually storing line data
  */
 template <class lineformat>
-std::vector<lineformat> read_csv_file(const std::string &fname) {
-	std::vector<std::string> lines = file_get_lines(fname);
+std::vector<lineformat> read_csv_file(AssetLoader &loader, const std::string &fname) {
+	std::vector<std::string> lines = loader.file_get_lines(fname);
 
 	size_t line_count = 0;
 
@@ -63,12 +64,12 @@ std::vector<lineformat> read_csv_file(const std::string &fname) {
  * should be called from the .recurse() method of the struct.
  */
 template <class lineformat>
-std::vector<lineformat> recurse_data_files(Dir basedir, const std::string &fname) {
+std::vector<lineformat> recurse_data_files(AssetLoader &loader, Dir basedir, const std::string &fname) {
 	std::vector<lineformat> result;
 	std::string merged_filename = basedir.join(fname);
 
-	if (0 < file_size(merged_filename)) {
-		result = read_csv_file<lineformat>(merged_filename);
+	if (0 < loader.file_size(merged_filename)) {
+		result = read_csv_file<lineformat>(loader, merged_filename);
 
 		//the new basedir is the old basedir
 		// + the directory part of the current relative file name
@@ -77,7 +78,7 @@ std::vector<lineformat> recurse_data_files(Dir basedir, const std::string &fname
 		size_t line_count = 0;
 		for (auto &entry : result) {
 			line_count += 1;
-			if (not entry.recurse(new_basedir)) {
+			if (not entry.recurse(loader, new_basedir)) {
 				throw Error("failed reading follow up files for %s in line %" PRIuPTR,
 				            merged_filename.c_str(), static_cast<uintptr_t>(line_count));
 			}
@@ -93,9 +94,9 @@ std::vector<lineformat> recurse_data_files(Dir basedir, const std::string &fname
 
 
 template <class lineformat>
-std::vector<lineformat> read_csv_file(const char *fname) {
+std::vector<lineformat> read_csv_file(AssetLoader &loader, char *fname) {
 	std::string filename{fname};
-	return read_csv_file<lineformat>(filename);
+	return read_csv_file<lineformat>(loader, filename);
 }
 
 /**
@@ -109,8 +110,8 @@ struct subdata {
 	std::string filename;
 	std::vector<cls> data;
 
-	bool read(Dir basedir) {
-		this->data = recurse_data_files<cls>(basedir, this->filename);
+	bool read(AssetLoader &loader, Dir basedir) {
+		this->data = recurse_data_files<cls>(loader, basedir, this->filename);
 		return true;
 	}
 

@@ -89,7 +89,7 @@ int run_game(Arguments *args) {
 	Engine &engine = Engine::get();
 
 	// initialize terminal colors
-	auto termcolors = util::read_csv_file<gamedata::palette_color>(data_dirs.at(0).join("converted/termcolors.docx"));
+	auto termcolors = util::read_csv_file<gamedata::palette_color>(assetloader, data_dirs.at(0).join("converted/termcolors.docx"));
 
 	console::Console console(termcolors);
 	console.register_to_engine(&engine);
@@ -119,31 +119,29 @@ GameMain::GameMain(Engine *engine)
 	scrolling_active{false},
 	construct_mode{true},
 	selected_unit{nullptr},
-	assetmanager{engine->get_data_dir()},
+	assetmanager{engine->get_asset_loader()},
 	gamedata_loaded{false},
 	engine{engine} {
 
+	AssetLoader &loader = engine->get_asset_loader();
 	engine->register_draw_action(this);
 	engine->register_input_action(this);
 	engine->register_tick_action(this);
 	engine->register_tick_action(&this->placed_units);
 	engine->register_drawhud_action(this);
 
-	const util::Dir *data_dir = engine->get_data_dir();
-	util::Dir asset_dir = data_dir->append("converted");
-
 	// load textures and stuff
-	gaben      = new Texture{data_dir->join("gaben.png")};
+	gaben      = new Texture{loader, "gaben.png"};
 
-	auto string_resources = util::read_csv_file<gamedata::string_resource>(asset_dir.join("string_resources.docx"));
-	auto terrain_types  = util::read_csv_file<gamedata::terrain_type>(asset_dir.join("gamedata/gamedata-empiresdat/0000-terrains.docx"));
-	auto blending_modes = util::read_csv_file<gamedata::blending_mode>(asset_dir.join("blending_modes.docx"));
+	auto string_resources = util::read_csv_file<gamedata::string_resource>(loader, "string_resources.docx");
+	auto terrain_types  = util::read_csv_file<gamedata::terrain_type>(loader, "gamedata/gamedata-empiresdat/0000-terrains.docx");
+	auto blending_modes = util::read_csv_file<gamedata::blending_mode>(loader, "blending_modes.docx");
 
 	// create the terrain which will be filled by chunks
 	terrain = new Terrain(assetmanager, terrain_types, blending_modes, true);
 	terrain->fill(terrain_data, terrain_data_size);
 
-	auto player_color_lines = util::read_csv_file<gamedata::palette_color>(asset_dir.join("player_palette_50500.docx"));
+	auto player_color_lines = util::read_csv_file<gamedata::palette_color>(loader, "player_palette_50500.docx");
 
 	GLfloat *playercolors = new GLfloat[player_color_lines.size() * 4];
 	for (size_t i = 0; i < player_color_lines.size(); i++) {
@@ -158,27 +156,27 @@ GameMain::GameMain(Engine *engine)
 	// read shader source codes and create shader objects for wrapping them.
 
 	char *texture_vert_code;
-	util::read_whole_file(&texture_vert_code, data_dir->join("shaders/maptexture.vert.glsl"));
+	loader.read_whole_file(&texture_vert_code, "shaders/maptexture.vert.glsl");
 	auto plaintexture_vert = new shader::Shader(GL_VERTEX_SHADER, texture_vert_code);
 	delete[] texture_vert_code;
 
 	char *texture_frag_code;
-	util::read_whole_file(&texture_frag_code, data_dir->join("shaders/maptexture.frag.glsl"));
+	loader.read_whole_file(&texture_frag_code, "shaders/maptexture.frag.glsl");
 	auto plaintexture_frag = new shader::Shader(GL_FRAGMENT_SHADER, texture_frag_code);
 	delete[] texture_frag_code;
 
 	char *teamcolor_frag_code;
-	util::read_whole_file(&teamcolor_frag_code, data_dir->join("shaders/teamcolors.frag.glsl"));
+	loader.read_whole_file(&teamcolor_frag_code, "shaders/teamcolors.frag.glsl");
 	auto teamcolor_frag = new shader::Shader(GL_FRAGMENT_SHADER, teamcolor_frag_code);
 	delete[] teamcolor_frag_code;
 
 	char *alphamask_vert_code;
-	util::read_whole_file(&alphamask_vert_code, data_dir->join("shaders/alphamask.vert.glsl"));
+	loader.read_whole_file(&alphamask_vert_code, "shaders/alphamask.vert.glsl");
 	auto alphamask_vert = new shader::Shader(GL_VERTEX_SHADER, alphamask_vert_code);
 	delete[] alphamask_vert_code;
 
 	char *alphamask_frag_code;
-	util::read_whole_file(&alphamask_frag_code, data_dir->join("shaders/alphamask.frag.glsl"));
+	loader.read_whole_file(&alphamask_frag_code, "shaders/alphamask.frag.glsl");
 	auto alphamask_frag = new shader::Shader(GL_FRAGMENT_SHADER, alphamask_frag_code);
 	delete[] alphamask_frag_code;
 
@@ -232,10 +230,10 @@ GameMain::GameMain(Engine *engine)
 	delete alphamask_vert;
 	delete alphamask_frag;
 
-	auto gamedata_load_function = [this, engine, asset_dir]() -> std::vector<gamedata::empiresdat> {
+	auto gamedata_load_function = [this, &loader]() -> std::vector<gamedata::empiresdat> {
 		log::msg("loading game specification files... stand by, will be faster soon...");
-		util::Dir gamedata_dir = asset_dir.append("gamedata");
-		return std::move(util::recurse_data_files<gamedata::empiresdat>(gamedata_dir, "gamedata-empiresdat.docx"));
+		util::Dir gamedata_dir("gamedata");
+		return std::move(util::recurse_data_files<gamedata::empiresdat>(loader, gamedata_dir, "gamedata-empiresdat.docx"));
 	};
 	auto gamedata_load_callback = [this](job::result_function_t<std::vector<gamedata::empiresdat>> get_result) {
 		auto result = get_result();
@@ -245,8 +243,7 @@ GameMain::GameMain(Engine *engine)
 }
 
 void GameMain::on_gamedata_loaded(std::vector<gamedata::empiresdat> &gamedata) {
-	const util::Dir *data_dir = this->engine->get_data_dir();
-	util::Dir asset_dir = data_dir->append("converted");
+	util::Dir asset_dir("converted");
 
 	// create graphic id => graphic map
 	for (auto &graphic : gamedata[0].graphics.data) {
@@ -278,6 +275,7 @@ void GameMain::on_gamedata_loaded(std::vector<gamedata::empiresdat> &gamedata) {
 
 	// playable sound files for the audio manager
 	std::vector<gamedata::sound_file> sound_files;
+	AssetLoader &loader = this->engine->get_asset_loader();
 	for (gamedata::sound &sound : gamedata[0].sounds.data) {
 		std::vector<int> sound_items;
 

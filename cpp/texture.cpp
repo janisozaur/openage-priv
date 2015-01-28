@@ -57,15 +57,15 @@ Texture::Texture(int width, int height, std::unique_ptr<uint32_t[]> data)
 	glGenBuffers(1, &this->vertbuf);
 }
 
-Texture::Texture(const std::string &filename, bool use_metafile)
+Texture::Texture(AssetLoader &loader, const std::string &filename, bool use_metafile)
 	:
 	use_metafile{use_metafile},
 	filename{filename} {
 	// load the texture upon creation
-	this->load();
+	this->load(loader);
 }
 
-void Texture::load() {
+void Texture::load(AssetLoader &loader) {
 	SDL_Surface *surface;
 	int texture_format_in;
 	int texture_format_out;
@@ -116,7 +116,7 @@ void Texture::load() {
 		log::msg("loading meta file %s", meta_filename);
 
 		// get subtexture information by meta file exported by script
-		this->subtextures = util::read_csv_file<gamedata::subtexture>(meta_filename);
+		this->subtextures = util::read_csv_file<gamedata::subtexture>(loader, meta_filename);
 		this->subtexture_count = this->subtextures.size();
 
 		// TODO: use information from empires.dat for that, also use x and y sizes:
@@ -160,9 +160,9 @@ void Texture::unload() {
 }
 
 
-void Texture::reload() {
+void Texture::reload(AssetLoader &loader) {
 	this->unload();
-	this->load();
+	this->load(loader);
 }
 
 

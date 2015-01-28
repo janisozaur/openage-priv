@@ -152,11 +152,6 @@ public:
 	void register_resize_action(ResizeHandler *handler);
 
 	/**
-	 * return the data directory where the engine was started from.
-	 */
-	const util::Dir *get_data_dir();
-
-	/**
 	 * return this engine's job manager.
 	 */
 	job::JobManager *get_job_manager();
@@ -324,7 +319,7 @@ private:
 	/**
 	 * The engine's AssetLoader class, for managing asset paths.
 	 */
-	AssetLoader assetloader;
+	AssetLoader &assetloader;
 };
 
 } // namespace openage
