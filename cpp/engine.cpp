@@ -33,11 +33,11 @@ namespace openage {
 // engine singleton instance allocation
 Engine *Engine::instance = nullptr;
 
-void Engine::create(const std::vector<util::Dir> data_dirs, const char *windowtitle) {
+void Engine::create(AssetLoader &assetloader, const char *windowtitle) {
 	// only create the singleton instance if it was not created before..
 	if (Engine::instance == nullptr) {
 		// reset the pointer to the new engine
-		Engine::instance = new Engine(data_dirs, windowtitle);
+		Engine::instance = new Engine(assetloader, windowtitle);
 	}
 	else {
 		throw util::Error{"you tried to create another singleton instance!!111"};
@@ -58,7 +58,7 @@ Engine &Engine::get() {
 }
 
 
-Engine::Engine(const std::vector<util::Dir> data_dirs, const char *windowtitle)
+Engine::Engine(AssetLoader &assetloader, const char *windowtitle)
 	:
 	running{false},
 	drawing_debug_overlay{true},
@@ -69,7 +69,9 @@ Engine::Engine(const std::vector<util::Dir> data_dirs, const char *windowtitle)
 	camhud_window{0, 600},
 	tile_halfsize{48, 24},  // TODO: get from convert script
 	data_dirs{data_dirs},
-	audio_manager{} {
+	audio_manager{},
+	assetloader{assetloader}
+{
 
 	for (uint32_t size : {12, 20}) {
 		fonts[size] = std::unique_ptr<Font>{new Font{"DejaVu Serif", "Book", size}};
@@ -356,6 +358,10 @@ ScreenshotManager &Engine::get_screenshot_manager() {
 
 CoreInputHandler &Engine::get_input_handler() {
 	return this->input_handler;
+}
+
+AssetLoader &Engine::get_asset_loader() {
+	return this->assetloader;
 }
 
 unsigned int Engine::lastframe_msec() {

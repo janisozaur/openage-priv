@@ -82,9 +82,10 @@ int run_game(Arguments *args) {
 	for (auto &dir : args->data_directories) {
 		data_dirs.push_back(util::Dir{dir});
 	}
+	AssetLoader assetloader(data_dirs);
 
 	timer.start();
-	Engine::create(data_dirs, "openage");
+	Engine::create(assetloader, "openage");
 	Engine &engine = Engine::get();
 
 	// initialize terminal colors

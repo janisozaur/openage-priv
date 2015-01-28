@@ -20,6 +20,7 @@
 #include "util/dir.h"
 #include "util/fps.h"
 #include "screenshot.h"
+#include "assetloader.h"
 
 namespace openage {
 
@@ -50,7 +51,7 @@ public:
 	/**
 	 * singleton constructor, use this to create the engine instance.
 	 */
-	static void create(const std::vector<util::Dir> data_dirs, const char *windowtitle);
+	static void create(AssetLoader &assetloader, const char *windowtitle);
 
 	/**
 	 * singleton destructor, use when the program is shutting down.
@@ -68,7 +69,7 @@ private:
 	 * engine initialization method.
 	 * opens a window and initializes the OpenGL context.
 	 */
-	Engine(const std::vector<util::Dir> data_dirs, const char *windowtitle);
+	Engine(AssetLoader &assetloader, const char *windowtitle);
 
 	/**
 	 * engine copy constructor.
@@ -174,6 +175,12 @@ public:
 	 * return the core input handler of the engine.
 	 */
 	CoreInputHandler &get_input_handler();
+
+	/**
+	 * @brief get_asset_loader
+	 * @return this engine's asset loader
+	 */
+	AssetLoader &get_asset_loader();
 
 	/**
 	 * return the number of milliseconds that passed
@@ -313,6 +320,11 @@ private:
 	 * but it would allow having multiple ones.
 	 */
 	SDL_GLContext glcontext;
+
+	/**
+	 * The engine's AssetLoader class, for managing asset paths.
+	 */
+	AssetLoader assetloader;
 };
 
 } // namespace openage

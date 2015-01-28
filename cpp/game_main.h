@@ -20,6 +20,7 @@
 #include "util/externalprofiler.h"
 #include "gamedata/gamedata.gen.h"
 #include "job/job.h"
+#include "assetloader.h"
 
 namespace openage {
 
@@ -124,6 +125,7 @@ public:
 	AssetManager assetmanager;
 
 	util::ExternalProfiler external_profiler;
+	AssetLoader assetloader;
 private:
 	void on_gamedata_loaded(std::vector<gamedata::empiresdat> &gamedata);
 
