@@ -50,7 +50,7 @@ public:
 	/**
 	 * singleton constructor, use this to create the engine instance.
 	 */
-	static void create(util::Dir *data_dir, const char *windowtitle);
+	static void create(const std::vector<util::Dir> data_dirs, const char *windowtitle);
 
 	/**
 	 * singleton destructor, use when the program is shutting down.
@@ -68,7 +68,7 @@ private:
 	 * engine initialization method.
 	 * opens a window and initializes the OpenGL context.
 	 */
-	Engine(util::Dir *data_dir, const char *windowtitle);
+	Engine(const std::vector<util::Dir> data_dirs, const char *windowtitle);
 
 	/**
 	 * engine copy constructor.
@@ -153,7 +153,7 @@ public:
 	/**
 	 * return the data directory where the engine was started from.
 	 */
-	util::Dir *get_data_dir();
+	const util::Dir *get_data_dir();
 
 	/**
 	 * return this engine's job manager.
@@ -245,7 +245,7 @@ private:
 	/**
 	 * the current data directory for the engine.
 	 */
-	util::Dir *data_dir;
+	const std::vector<util::Dir> data_dirs;
 
 	/**
 	 * the core engine input handler.

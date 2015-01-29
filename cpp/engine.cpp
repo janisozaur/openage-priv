@@ -33,11 +33,11 @@ namespace openage {
 // engine singleton instance allocation
 Engine *Engine::instance = nullptr;
 
-void Engine::create(util::Dir *data_dir, const char *windowtitle) {
+void Engine::create(const std::vector<util::Dir> data_dirs, const char *windowtitle) {
 	// only create the singleton instance if it was not created before..
 	if (Engine::instance == nullptr) {
 		// reset the pointer to the new engine
-		Engine::instance = new Engine(data_dir, windowtitle);
+		Engine::instance = new Engine(data_dirs, windowtitle);
 	}
 	else {
 		throw util::Error{"you tried to create another singleton instance!!111"};
@@ -58,7 +58,7 @@ Engine &Engine::get() {
 }
 
 
-Engine::Engine(util::Dir *data_dir, const char *windowtitle)
+Engine::Engine(const std::vector<util::Dir> data_dirs, const char *windowtitle)
 	:
 	running{false},
 	drawing_debug_overlay{true},
@@ -68,7 +68,7 @@ Engine::Engine(util::Dir *data_dir, const char *windowtitle)
 	camgame_window{400, 300},
 	camhud_window{0, 600},
 	tile_halfsize{48, 24},  // TODO: get from convert script
-	data_dir{data_dir},
+	data_dirs{data_dirs},
 	audio_manager{} {
 
 	for (uint32_t size : {12, 20}) {
@@ -338,8 +338,8 @@ void Engine::register_resize_action(ResizeHandler *handler) {
 	this->input_handler.register_resize_action(handler);
 }
 
-util::Dir *Engine::get_data_dir() {
-	return this->data_dir;
+const util::Dir *Engine::get_data_dir() {
+	return &this->data_dirs.at(0);
 }
 
 job::JobManager *Engine::get_job_manager() {

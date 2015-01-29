@@ -36,7 +36,7 @@ Arguments::Arguments()
 	:
 	argc{0},
 	argv{nullptr},
-	data_directory{"./assets"},
+	data_directories{std::string{"./assets"}},
 	demo_specified{false},
 	demo_argc{0},
 	demo_argv{nullptr},
@@ -81,7 +81,7 @@ Arguments parse_args(int argc, char **argv) {
 				// with arg
 				if (0 == strcmp("data", opt_name)) {
 					log::msg("data folder will be %s", optarg);
-					ret.data_directory = optarg;
+					ret.data_directories.push_back(optarg);
 				} else {
 					handled = false;
 				}

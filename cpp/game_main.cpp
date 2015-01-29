@@ -67,20 +67,28 @@ int run_game(Arguments *args) {
 
 	struct stat data_dir_stat;
 
-	if (stat(args->data_directory, &data_dir_stat) == -1) {
-		throw util::Error("Failed checking directory %s: %s",
-		                  args->data_directory, strerror(errno));
+	if (args->data_directories.empty()) {
+		throw util::Error("No data directory specified");
+	}
+	for (auto &dir : args->data_directories) {
+		if (stat(dir.c_str(), &data_dir_stat) == -1) {
+			throw util::Error("Failed checking directory %s: %s",
+		                  dir.c_str(), strerror(errno));
+		}
 	}
 
-	log::msg("launching engine with data directory '%s'", args->data_directory);
-	util::Dir data_dir{args->data_directory};
+	log::msg("launching engine with data directory '%s'", args->data_directories.at(0).c_str());
+	std::vector<util::Dir> data_dirs;
+	for (auto &dir : args->data_directories) {
+		data_dirs.push_back(util::Dir{dir});
+	}
 
 	timer.start();
-	Engine::create(&data_dir, "openage");
+	Engine::create(data_dirs, "openage");
 	Engine &engine = Engine::get();
 
 	// initialize terminal colors
-	auto termcolors = util::read_csv_file<gamedata::palette_color>(data_dir.join("converted/termcolors.docx"));
+	auto termcolors = util::read_csv_file<gamedata::palette_color>(data_dirs.at(0).join("converted/termcolors.docx"));
 
 	console::Console console(termcolors);
 	console.register_to_engine(&engine);
@@ -120,7 +128,7 @@ GameMain::GameMain(Engine *engine)
 	engine->register_tick_action(&this->placed_units);
 	engine->register_drawhud_action(this);
 
-	util::Dir *data_dir = engine->get_data_dir();
+	const util::Dir *data_dir = engine->get_data_dir();
 	util::Dir asset_dir = data_dir->append("converted");
 
 	// load textures and stuff
@@ -236,7 +244,7 @@ GameMain::GameMain(Engine *engine)
 }
 
 void GameMain::on_gamedata_loaded(std::vector<gamedata::empiresdat> &gamedata) {
-	util::Dir *data_dir = this->engine->get_data_dir();
+	const util::Dir *data_dir = this->engine->get_data_dir();
 	util::Dir asset_dir = data_dir->append("converted");
 
 	// create graphic id => graphic map

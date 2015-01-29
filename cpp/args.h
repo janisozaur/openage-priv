@@ -21,7 +21,7 @@ public:
 	int argc;
 	char **argv;
 
-	const char *data_directory;
+	std::vector<std::string> data_directories;
 	std::vector<std::string> tests;
 
 	bool demo_specified;

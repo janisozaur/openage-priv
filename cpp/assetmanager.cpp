@@ -13,7 +13,7 @@
 
 namespace openage {
 
-AssetManager::AssetManager(util::Dir *root)
+AssetManager::AssetManager(const util::Dir *root)
 	:
 	root{root},
 	missing_tex{nullptr} {
