@@ -16,20 +16,6 @@
 namespace openage {
 namespace util {
 
-ssize_t file_size(const std::string &filename);
-ssize_t file_size(Dir basedir, const std::string &fname);
-
-ssize_t read_whole_file(char **result, const char *filename);
-ssize_t read_whole_file(char **result, const std::string &filename);
-
-/**
- * get the lines of a file.
- *
- * returns vector of strings, each entry is one line in the file.
- */
-std::vector<std::string> file_get_lines(const std::string &file_name);
-
-
 /**
  * read a single csv file.
  * call the destination struct .fill() method for actually storing line data
