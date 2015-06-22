@@ -9,6 +9,7 @@ import os
 import os.path
 import pickle
 import subprocess
+import multiprocessing as mp
 
 from .. import util
 from .colortable import ColorTable, PlayerColorTable
@@ -23,6 +24,8 @@ from .texture import Texture
 # speeds up massively as the binary doesn't need to be reparsed.
 dat_cache_file = os.path.join(gettempdir(), "empires2_x1_p1.dat.pickle")
 
+pool = mp.Pool(processes=8)
+graphics_out = []
 
 class ExtractionRule:
     """
@@ -60,6 +63,34 @@ class ExtractionRule:
 
         return True
 
+def export_texture_wrapped(file_data, drsname, file_id, file_extension, fname, palette, output_formats):
+    try:
+        export_texture(file_data, drsname, file_id, file_extension, fname, palette, output_formats)
+    except:
+        val = "%s, %s" % (fname, file_id)
+        print("exception: " + val)
+        dbg("exception: " + val, 1)
+
+def export_texture(file_data, drsname, file_id, file_extension, fname, palette, output_formats):
+    from .slp import SLP
+    s = SLP(file_data)
+
+    dbg("%s: %d.%s -> %s -> generating atlas" % (
+        drsname, file_id, file_extension, fname), 1)
+
+    # create exportable texture from the slp
+    texture = Texture(s, palette)
+
+    # the hotspots of terrain textures have to be fixed:
+    if drsname == "terrain":
+        for entry in texture.image_metadata:
+            entry["cx"] = terrain_tile_size.tile_halfsize["x"]
+            entry["cy"] = terrain_tile_size.tile_halfsize["y"]
+
+    # save the image and the corresponding metadata file
+    texture.save(fname, output_formats)
+    dbg("texture: finished", 1)
+    return True
 
 def media_convert(args):
     """
@@ -266,23 +297,8 @@ def media_convert(args):
 
             # create an image file
             if file_extension == 'slp':
-                from .slp import SLP
-                s = SLP(file_data)
-
-                dbg("%s: %d.%s -> %s -> generating atlas" % (
-                    drsname, file_id, file_extension, fname), 1)
-
-                # create exportable texture from the slp
-                texture = Texture(s, palette)
-
-                # the hotspots of terrain textures have to be fixed:
-                if drsname == "terrain":
-                    for entry in texture.image_metadata:
-                        entry["cx"] = terrain_tile_size.tile_halfsize["x"]
-                        entry["cy"] = terrain_tile_size.tile_halfsize["y"]
-
-                # save the image and the corresponding metadata file
-                texture.save(fname, output_formats)
+                graphics_out.append(pool.apply_async(export_texture_wrapped, args=(file_data, drsname, file_id, file_extension, fname, palette, output_formats)))
+                #export_texture(file_data, drsname, file_id, file_extension, fname, palette, output_formats)
 
             # create a sound file
             elif file_extension == 'wav':
@@ -326,6 +342,16 @@ def media_convert(args):
                     f.write(file_data)
 
             media_files_extracted += 1
+
+    dbg("dbg: getting", 1)
+    pool.close()
+    pool.join()
+    #for i in graphics_out:
+    #    i.get()
+    #    print("got " + i)
+    #    dbg("dbg: got " + i, 1)
+    print("done!")
+    dbg("dbg: done!", 1)
 
     if write_enabled:
         dbg("media files extracted: %d" % (media_files_extracted), 0)
